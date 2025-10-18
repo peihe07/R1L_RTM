@@ -257,9 +257,10 @@ h2 {
 }
 
 .source-id {
-  min-width: 120px;
+  min-width: 140px;
   text-align: center;
   color: #6b7280;
+  white-space: nowrap;
 }
 
 .source-link {

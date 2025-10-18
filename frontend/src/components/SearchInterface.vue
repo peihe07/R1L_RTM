@@ -102,13 +102,13 @@ h1 {
 
 .search-section {
   display: flex;
-  gap: 16px;
-  max-width: 1200px;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
 .search-group {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 8px;
