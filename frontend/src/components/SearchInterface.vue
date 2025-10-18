@@ -5,14 +5,13 @@
 
     <div class="search-section">
       <div class="search-group">
-        <label for="cfts-search">搜尋 CFTS 搜尋欄:</label>
+        <label for="cfts-search">CFTS ID 搜尋:</label>
         <div class="input-group">
           <input
             id="cfts-search"
             v-model="cftsQuery"
             type="text"
             list="cfts-datalist"
-            placeholder="輸入 CFTS ID (例: CFTS016 Anti-Theft)"
             @keyup.enter="searchCFTS"
             @focus="loadCftsIds"
           />
@@ -24,13 +23,12 @@
       </div>
 
       <div class="search-group">
-        <label for="req-search">搜尋 Req.ID 搜尋欄:</label>
+        <label for="req-search">Req.ID 搜尋:</label>
         <div class="input-group">
           <input
             id="req-search"
             v-model="reqQuery"
             type="text"
-            placeholder="輸入 Req.ID (例: 4942459)"
             @keyup.enter="searchReq"
           />
           <button @click="searchReq" :disabled="!reqQuery.trim()">搜尋</button>
@@ -69,11 +67,15 @@ export default {
         const cftsIdMatch = this.cftsQuery.trim().match(/CFTS\d+/)
         const cftsId = cftsIdMatch ? cftsIdMatch[0] : this.cftsQuery.trim()
         this.$emit('search', { type: 'cfts', query: cftsId })
+        // Clear the input field after search
+        this.cftsQuery = ''
       }
     },
     searchReq() {
       if (this.reqQuery.trim()) {
         this.$emit('search', { type: 'req', query: this.reqQuery.trim() })
+        // Clear the input field after search
+        this.reqQuery = ''
       }
     }
   }

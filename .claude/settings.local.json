@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker-compose exec backend python -c \"\nfrom app.db.database import SessionLocal\nfrom app.models.sys2_requirement import SYS2RequirementDB\nfrom sqlalchemy import func\n\ndb = SessionLocal()\n# Find Melco IDs with multiple records\nresult = db.query(SYS2RequirementDB.melco_id, func.count(SYS2RequirementDB.id).label(''count'')).group_by(SYS2RequirementDB.melco_id).having(func.count(SYS2RequirementDB.id) > 1).limit(5).all()\n\nprint(''Melco IDs with multiple SYS.2 records:'')\nfor melco_id, count in result:\n    print(f''{melco_id}: {count} records'')\n\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

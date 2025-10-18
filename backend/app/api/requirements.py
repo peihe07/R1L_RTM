@@ -20,11 +20,9 @@ def db_requirement_to_pydantic(db_req) -> CFTSRequirement:
         cfts_id=db_req.cfts_id,
         cfts_name=db_req.cfts_name,
         req_id=db_req.req_id,
-        polarian_id=db_req.polarian_id,
-        polarian_url=db_req.polarian_url,
+        source_id=db_req.source_id,
         description=db_req.description,
-        spec_object_type=db_req.spec_object_type,
-        sys2_scope=db_req.sys2_scope,
+        sr24_description=db_req.sr24_description,
         melco_id=db_req.melco_id,
         created_at=db_req.created_at,
         updated_at=db_req.updated_at

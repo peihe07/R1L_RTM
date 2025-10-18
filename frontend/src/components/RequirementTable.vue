@@ -36,19 +36,20 @@
               }"
               :ref="requirement.req_id === searchResults.target_req_id ? 'targetRow' : null"
             >
-              <td class="sr26-description">{{ requirement.description || '' }}</td>
+              <td class="sr26-description" v-html="highlightDifferences(requirement.description, requirement.sr24_description)"></td>
               <td class="reqif-foreign-id">{{ requirement.req_id }}</td>
               <td class="source-id">
-                <a v-if="requirement.polarian_url" :href="requirement.polarian_url" target="_blank" class="source-link">
-                  {{ requirement.polarian_id }}
-                </a>
-                <span v-else>{{ requirement.polarian_id }}</span>
+                {{ requirement.source_id || '' }}
               </td>
-              <td class="sr24-description">{{ requirement.description || '' }}</td>
+              <td class="sr24-description">{{ requirement.sr24_description || '' }}</td>
               <td class="melco-id">
-                <a v-if="requirement.melco_id" @click.prevent="viewMelcoDetail(requirement.melco_id)" class="melco-link">
-                  {{ requirement.melco_id }}
-                </a>
+                <template v-if="requirement.melco_id">
+                  <div v-for="(melcoId, idx) in splitMelcoIds(requirement.melco_id)" :key="idx" class="melco-id-item">
+                    <a @click.prevent="viewMelcoDetail(melcoId)" class="melco-link">
+                      {{ melcoId }}
+                    </a>
+                  </div>
+                </template>
                 <span v-else>-</span>
               </td>
             </tr>
@@ -86,7 +87,55 @@ export default {
   },
   methods: {
     viewMelcoDetail(melcoId) {
-      this.$emit('view-melco-detail', melcoId)
+      this.$emit('view-melco-detail', melcoId.trim())
+    },
+    splitMelcoIds(melcoIdString) {
+      // Split by newline or comma, and filter out empty strings
+      if (!melcoIdString) return []
+      return melcoIdString
+        .split(/[\n,]+/)
+        .map(id => id.trim())
+        .filter(id => id.length > 0)
+    },
+    highlightDifferences(sr26Text, sr24Text) {
+      // Compare SR26 and SR24, highlight differences in SR26
+      if (!sr26Text) return ''
+
+      // If SR24 is empty but SR26 has content, highlight all SR26
+      if (!sr24Text) {
+        return `<span class="text-diff">${this.escapeHtml(sr26Text)}</span>`
+      }
+
+      // If they're exactly the same, no highlighting needed
+      if (sr26Text === sr24Text) {
+        return this.escapeHtml(sr26Text)
+      }
+
+      // Split by sentence (period, comma, semicolon, etc.)
+      const sr26Sentences = sr26Text.split(/([.,;!?]+\s*)/)
+      const sr24Sentences = sr24Text.split(/([.,;!?]+\s*)/)
+
+      let result = []
+
+      for (let i = 0; i < sr26Sentences.length; i++) {
+        const sentence = sr26Sentences[i]
+        if (!sentence) continue
+
+        if (i >= sr24Sentences.length || sentence !== sr24Sentences[i]) {
+          // Different sentence/fragment - highlight it
+          result.push(`<span class="text-diff">${this.escapeHtml(sentence)}</span>`)
+        } else {
+          // Same sentence/fragment
+          result.push(this.escapeHtml(sentence))
+        }
+      }
+
+      return result.join('')
+    },
+    escapeHtml(text) {
+      const div = document.createElement('div')
+      div.textContent = text
+      return div.innerHTML
     }
   },
   watch: {
@@ -112,6 +161,15 @@ export default {
   max-width: 1400px;
   margin: 0 auto;
   padding: 24px;
+}
+
+/* Global style for dynamically inserted text-diff spans */
+:deep(.text-diff) {
+  background-color: #fef3c7;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-weight: 600;
+  color: #92400e;
 }
 
 .cfts-results, .req-results {
@@ -226,6 +284,11 @@ h2 {
 .melco-id {
   min-width: 150px;
   text-align: center;
+  vertical-align: top;
+}
+
+.melco-id-item {
+  margin: 2px 0;
 }
 
 .melco-link {
@@ -237,6 +300,7 @@ h2 {
   padding: 4px 8px;
   border-radius: 4px;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .melco-link:hover {

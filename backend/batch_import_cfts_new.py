@@ -85,34 +85,34 @@ class CFTSImporter:
                 reqif_id = row.get('ReqIF.ForeignID', '')
                 req_id = str(reqif_id).strip() if pd.notna(reqif_id) else ''
 
-                # Get Source Id as polarian_id
-                source_id = row.get('Source Id', '')
-                polarian_id = str(source_id).strip() if pd.notna(source_id) else ''
+                # Get Source Id
+                src_id = row.get('Source Id', '')
+                source_id = str(src_id).strip() if pd.notna(src_id) else ''
 
-                # Get Melco Id
-                melco_id = row.get('Melco Id', '')
-                melco_id = str(melco_id).strip() if pd.notna(melco_id) else ''
+                # Get Melco Id (keep as-is, don't split)
+                melco_id_raw = row.get('Melco Id', '')
+                melco_id = str(melco_id_raw).strip() if pd.notna(melco_id_raw) else ''
 
-                # Get descriptions
+                # Get descriptions (SR26 and SR24)
                 sr26_desc = row.get('SR26 Description', '')
                 sr24_desc = row.get('SR24 Description', '')
                 description = str(sr26_desc).strip() if pd.notna(sr26_desc) else ''
+                sr24_description = str(sr24_desc).strip() if pd.notna(sr24_desc) else ''
 
-                # Skip empty records (at least need req_id or polarian_id)
-                if not req_id and not polarian_id:
+                # Skip empty records (at least need req_id)
+                if not req_id:
                     continue
 
+                # Create record (keep Melco ID as-is with newlines)
                 record = {
                     'cfts_id': cfts_id,
                     'cfts_name': cfts_name,
                     'req_id': req_id,
-                    'polarian_id': polarian_id,
-                    'polarian_url': '',  # No hyperlink in this format
+                    'source_id': source_id,
                     'description': description,
-                    'spec_object_type': '',  # Not in this format
+                    'sr24_description': sr24_description,
                     'melco_id': melco_id
                 }
-
                 data.append(record)
 
             return data, total_count
@@ -136,10 +136,9 @@ class CFTSImporter:
         try:
             for item in data:
                 try:
-                    # Check if record already exists by req_id + cfts_id combination
+                    # Check if record already exists by req_id
                     existing = db.query(CFTSRequirementDB).filter(
-                        CFTSRequirementDB.req_id == item['req_id'],
-                        CFTSRequirementDB.cfts_id == item['cfts_id']
+                        CFTSRequirementDB.req_id == item['req_id']
                     ).first()
 
                     if existing:
@@ -241,7 +240,6 @@ class CFTSImporter:
                 print(f"  CFTS: {sample.cfts_id} - {sample.cfts_name}")
                 print(f"  Melco ID: {sample.melco_id}")
                 print(f"  Req ID: {sample.req_id}")
-                print(f"  Polarian ID: {sample.polarian_id}")
         finally:
             db.close()
 

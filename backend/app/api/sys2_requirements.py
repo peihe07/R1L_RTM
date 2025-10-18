@@ -26,19 +26,19 @@ def db_sys2_to_detail(db_req) -> SYS2RequirementDetail:
     )
 
 
-@router.get("/requirement/{melco_id}", response_model=SYS2RequirementDetail)
+@router.get("/requirement/{melco_id}", response_model=List[SYS2RequirementDetail])
 async def get_sys2_requirement(melco_id: str, db: Session = Depends(get_db)):
     """Get SYS.2 requirement details by Melco ID."""
     from ..models.sys2_requirement import SYS2RequirementDB
 
-    db_requirement = db.query(SYS2RequirementDB).filter(
+    db_requirements = db.query(SYS2RequirementDB).filter(
         SYS2RequirementDB.melco_id == melco_id
-    ).first()
+    ).all()
 
-    if not db_requirement:
+    if not db_requirements:
         raise HTTPException(status_code=404, detail=f"Melco ID {melco_id} not found")
 
-    return db_sys2_to_detail(db_requirement)
+    return [db_sys2_to_detail(req) for req in db_requirements]
 
 
 @router.get("/by-cfts/{cfts_id}", response_model=List[SYS2RequirementDetail])

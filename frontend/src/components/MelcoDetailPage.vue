@@ -7,11 +7,17 @@
 
     <div v-if="loading" class="loading">Loading...</div>
     <div v-else-if="error" class="error">{{ error }}</div>
-    <div v-else-if="requirement" class="content-sections">
+    <div v-else class="content-sections">
       <!-- Upper Section: SYS.2 Requirement Details -->
       <div class="requirement-section">
-        <h2>SYS.2 Requirement Details</h2>
-        <div class="detail-card">
+        <h2>SYS.2 Requirement Details ({{ requirements.length }})</h2>
+        <div v-if="requirements.length === 0" class="placeholder-card">
+          <p>No SYS.2 requirement data found for this Melco ID</p>
+          <p class="hint">This Melco ID may not have associated SYS.2 requirements in the database.</p>
+        </div>
+        <div v-for="(requirement, index) in requirements" :key="index" class="detail-card">
+          <div class="card-header">Record {{ index + 1 }}</div>
+
           <div class="detail-row">
             <div class="detail-label">CFTS:</div>
             <div class="detail-value">{{ requirement.cfts_id }} - {{ requirement.cfts_name }}</div>
@@ -64,7 +70,11 @@
             </thead>
             <tbody>
               <tr v-for="(tc, index) in testcases" :key="index">
-                <td>{{ tc.source }}</td>
+                <td class="source-cell">
+                  <div v-for="(src, idx) in splitByNewline(tc.source)" :key="idx" class="source-item">
+                    {{ src }}
+                  </div>
+                </td>
                 <td>{{ tc.title }}</td>
                 <td>{{ tc.section }}</td>
                 <td class="test-item">{{ tc.test_item_en }}</td>
@@ -90,7 +100,7 @@ export default {
   },
   data() {
     return {
-      requirement: null,
+      requirements: [],
       testcases: [],
       loading: true,
       error: null
@@ -101,16 +111,26 @@ export default {
     await this.fetchTestCases()
   },
   methods: {
+    splitByNewline(text) {
+      // Split by newline and filter out empty strings
+      if (!text) return ['']
+      return text.split('\n').map(s => s.trim()).filter(s => s.length > 0)
+    },
     async fetchRequirementDetails() {
       this.loading = true
       this.error = null
 
       try {
         const response = await fetch(`http://localhost:8001/sys2/requirement/${this.melcoId}`)
+        if (response.status === 404) {
+          // No SYS.2 data found, but this is not an error
+          this.requirements = []
+          return
+        }
         if (!response.ok) {
           throw new Error(`Failed to fetch requirement: ${response.statusText}`)
         }
-        this.requirement = await response.json()
+        this.requirements = await response.json()
       } catch (err) {
         console.error('Error fetching requirement:', err)
         this.error = err.message
@@ -220,6 +240,22 @@ h2 {
 
 .detail-card {
   padding: 24px;
+  margin-bottom: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.detail-card:last-child {
+  margin-bottom: 0;
+}
+
+.card-header {
+  font-weight: 600;
+  font-size: 16px;
+  color: #1f2937;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #3b82f6;
 }
 
 .detail-row {
@@ -245,6 +281,8 @@ h2 {
   font-size: 14px;
   line-height: 1.6;
   word-wrap: break-word;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
 }
 
 .placeholder-card {
@@ -254,8 +292,13 @@ h2 {
 }
 
 .placeholder-card p {
-  margin: 0;
+  margin: 0 0 8px 0;
   font-size: 14px;
+}
+
+.placeholder-card .hint {
+  font-size: 13px;
+  color: #9ca3af;
 }
 
 .testcase-table-container {
@@ -299,6 +342,17 @@ h2 {
 
 .testcase-table tbody tr:hover {
   background: #f3f4f6;
+}
+
+.testcase-table td.source-cell {
+  vertical-align: top;
+  min-width: 150px;
+  white-space: nowrap;
+}
+
+.source-item {
+  margin: 2px 0;
+  line-height: 1.4;
 }
 
 .testcase-table td.test-item,
