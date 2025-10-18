@@ -9,6 +9,7 @@ def create_cfts_requirement(db: Session, requirement: CFTSRequirement) -> CFTSRe
     """Create a new CFTS requirement."""
     db_requirement = CFTSRequirementDB(
         cfts_id=requirement.cfts_id,
+        cfts_name=requirement.cfts_name,
         req_id=requirement.req_id,
         polarian_id=requirement.polarian_id,
         polarian_url=requirement.polarian_url,
@@ -56,6 +57,7 @@ def bulk_create_cfts_requirements(db: Session, requirements: List[CFTSRequiremen
         if not existing:
             db_requirement = CFTSRequirementDB(
                 cfts_id=req.cfts_id,
+                cfts_name=req.cfts_name,
                 req_id=req.req_id,
                 polarian_id=req.polarian_id,
                 polarian_url=req.polarian_url,

@@ -18,6 +18,7 @@ def db_requirement_to_pydantic(db_req) -> CFTSRequirement:
     """Convert database model to Pydantic model."""
     return CFTSRequirement(
         cfts_id=db_req.cfts_id,
+        cfts_name=db_req.cfts_name,
         req_id=db_req.req_id,
         polarian_id=db_req.polarian_id,
         polarian_url=db_req.polarian_url,
@@ -89,12 +90,26 @@ async def get_all_requirements(skip: int = 0, limit: int = 100, db: Session = De
 
 @router.get("/autocomplete/cfts-ids")
 async def autocomplete_cfts_ids(db: Session = Depends(get_db)):
-    """Get unique CFTS IDs for autocomplete."""
+    """Get unique CFTS IDs with names for autocomplete (format: 'CFTS016 Anti-Theft')."""
     from sqlalchemy import distinct
     from ..models.cfts_db import CFTSRequirementDB
 
-    cfts_ids = db.query(distinct(CFTSRequirementDB.cfts_id)).order_by(CFTSRequirementDB.cfts_id).all()
-    return [cfts_id[0] for cfts_id in cfts_ids if cfts_id[0]]
+    # Get distinct CFTS ID and name pairs
+    cfts_data = db.query(
+        CFTSRequirementDB.cfts_id,
+        CFTSRequirementDB.cfts_name
+    ).distinct().order_by(CFTSRequirementDB.cfts_id).all()
+
+    # Format as "CFTS016 Anti-Theft"
+    result = []
+    for cfts_id, cfts_name in cfts_data:
+        if cfts_id:
+            if cfts_name:
+                result.append(f"{cfts_id} {cfts_name}")
+            else:
+                result.append(cfts_id)
+
+    return result
 
 
 @req_router.get("/autocomplete/req-ids")

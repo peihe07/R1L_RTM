@@ -9,6 +9,7 @@ class CFTSRequirementDB(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     cfts_id = Column(String, index=True)
+    cfts_name = Column(String, default="")  # CFTS名稱（從檔名提取，例如：Anti-Theft）
     req_id = Column(String, index=True)  # C欄：ReqIF.ForeignID（數字，可能重複）
     polarian_id = Column(String, index=True, unique=True)  # A欄：ID（NEWR1L-xxxxx，唯一）
     polarian_url = Column(String, default="")  # A欄：Polarion 超連結

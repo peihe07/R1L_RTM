@@ -74,6 +74,10 @@ Thumbs.db
 logs
 *.log
 
+# Import reports
+*_report_*.json
+import_report_*.json
+
 # Build outputs
 dist/
 build/

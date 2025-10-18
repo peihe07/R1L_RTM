@@ -57,6 +57,26 @@ class BatchImporter:
             return match.group(0)
         return ''
 
+    def extract_cfts_name_from_filename(self, filename: str) -> str:
+        """
+        Extract CFTS name from filename.
+
+        Example: SYS1_CFTS016_Anti-Theft_SR26.xlsx -> Anti-Theft
+        Example: SYS1_CFTS091_Player Component Functions_SR26.xlsx -> Player Component Functions
+        Example: SYS1_CFTS086 Manual and Automatic Emergency Call_SR26.xlsx -> Manual and Automatic Emergency Call
+        """
+        # Remove file extension
+        name_without_ext = filename.replace('.xlsx', '').replace('.xls', '')
+
+        # Try to match pattern: anything after CFTS\d+ and before _SR\d+
+        # This handles both underscore and space separators after CFTS
+        match = re.search(r'CFTS\d+[_ ](.+?)_SR\d+', name_without_ext)
+        if match:
+            cfts_name = match.group(1).strip()
+            return cfts_name
+
+        return ''
+
     def parse_excel_file(self, file_path: Path) -> Tuple[List[Dict], int, int]:
         """
         Parse a single Excel file.
@@ -65,10 +85,12 @@ class BatchImporter:
             Tuple of (parsed_data, total_count, filtered_count)
         """
         try:
-            # Extract CFTS number from filename
+            # Extract CFTS number and name from filename
             cfts_number = self.extract_cfts_from_filename(file_path.name)
             if not cfts_number:
                 raise Exception(f"Could not extract CFTS number from filename: {file_path.name}")
+
+            cfts_name = self.extract_cfts_name_from_filename(file_path.name)
 
             # Read Excel file with pandas for data
             df = pd.read_excel(file_path)
@@ -105,9 +127,10 @@ class BatchImporter:
                 # Get hyperlink for this Polarian ID
                 polarian_url = hyperlinks.get(polarian_id, '')
 
-                # Use CFTS number from filename for classification
+                # Use CFTS number and name from filename for classification
                 record = {
                     'cfts_id': cfts_number,  # Use CFTS from filename
+                    'cfts_name': cfts_name,  # CFTS name extracted from filename
                     'req_id': req_id,  # C 欄: ReqIF.ForeignID (數字，可能重複)
                     'polarian_id': polarian_id,  # A 欄: ID (NEWR1L-xxxxx)
                     'polarian_url': polarian_url,  # A 欄: Polarion hyperlink

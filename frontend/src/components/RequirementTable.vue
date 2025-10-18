@@ -14,36 +14,16 @@
         </div>
       </div>
 
-      <div class="filter-controls">
-        <div class="filter-checkboxes">
-          <label class="filter-checkbox">
-            <input type="checkbox" v-model="showOnlySW" />
-            <span>只顯示 SW</span>
-          </label>
-          <label class="filter-checkbox">
-            <input type="checkbox" v-model="showOnlySystem" />
-            <span>只顯示 System</span>
-          </label>
-          <label class="filter-checkbox">
-            <input type="checkbox" v-model="showSWAndSystem" />
-            <span>只顯示 SW 和 System</span>
-          </label>
-        </div>
-        <div v-if="showOnlySW || showOnlySystem || showSWAndSystem" class="filter-info">
-          顯示 {{ filteredRequirements.length }} / {{ searchResults.requirements.length }} 筆
-        </div>
-      </div>
 
       <div class="table-container">
         <table class="excel-table">
           <thead>
             <tr>
-              <th>序號</th>
-              <th>CFTS-ID</th>
-              <th>Req.ID</th>
-              <th>Polarian ID</th>
-              <th>Scope</th>
-              <th>Test Case</th>
+              <th>SR26 Description</th>
+              <th>ReqIF.ForeignID</th>
+              <th>Source Id</th>
+              <th>SR24 Description</th>
+              <th>Melco Id</th>
             </tr>
           </thead>
           <tbody>
@@ -56,24 +36,21 @@
               }"
               :ref="requirement.req_id === searchResults.target_req_id ? 'targetRow' : null"
             >
-              <td class="row-number">
-                <span v-if="requirement.req_id === searchResults.target_req_id" class="target-indicator">▶</span>
-                {{ index + 1 }}
-              </td>
-              <td class="cfts-id">{{ requirement.cfts_id }}</td>
-              <td class="req-id">{{ requirement.req_id }}</td>
-              <td class="polarian-id">
-                <a v-if="requirement.polarian_url" :href="requirement.polarian_url" target="_blank" class="polarian-link">
+              <td class="sr26-description">{{ requirement.description || '' }}</td>
+              <td class="reqif-foreign-id">{{ requirement.req_id }}</td>
+              <td class="source-id">
+                <a v-if="requirement.polarian_url" :href="requirement.polarian_url" target="_blank" class="source-link">
                   {{ requirement.polarian_id }}
                 </a>
                 <span v-else>{{ requirement.polarian_id }}</span>
               </td>
-              <td class="scope">
-                <span v-if="requirement.sys2_scope" :class="{ 'scope-sw': requirement.sys2_scope === 'SW' }">
-                  {{ requirement.sys2_scope }}
-                </span>
+              <td class="sr24-description">{{ requirement.description || '' }}</td>
+              <td class="melco-id">
+                <a v-if="requirement.melco_id" @click.prevent="viewMelcoDetail(requirement.melco_id)" class="melco-link">
+                  {{ requirement.melco_id }}
+                </a>
+                <span v-else>-</span>
               </td>
-              <td class="test-case">{{ requirement.test_case || '待填' }}</td>
             </tr>
           </tbody>
         </table>
@@ -99,51 +76,20 @@ export default {
       default: null
     }
   },
-  data() {
-    return {
-      showOnlySW: false,
-      showOnlySystem: false,
-      showSWAndSystem: false
-    }
-  },
   computed: {
     filteredRequirements() {
       if (!this.searchResults || !this.searchResults.requirements) {
         return []
       }
-      if (this.showOnlySW) {
-        return this.searchResults.requirements.filter(req => req.sys2_scope === 'SW')
-      }
-      if (this.showOnlySystem) {
-        return this.searchResults.requirements.filter(req => req.sys2_scope === 'System')
-      }
-      if (this.showSWAndSystem) {
-        return this.searchResults.requirements.filter(req =>
-          req.sys2_scope === 'SW' || req.sys2_scope === 'System'
-        )
-      }
       return this.searchResults.requirements
     }
   },
+  methods: {
+    viewMelcoDetail(melcoId) {
+      this.$emit('view-melco-detail', melcoId)
+    }
+  },
   watch: {
-    showOnlySW(newVal) {
-      if (newVal) {
-        this.showOnlySystem = false
-        this.showSWAndSystem = false
-      }
-    },
-    showOnlySystem(newVal) {
-      if (newVal) {
-        this.showOnlySW = false
-        this.showSWAndSystem = false
-      }
-    },
-    showSWAndSystem(newVal) {
-      if (newVal) {
-        this.showOnlySW = false
-        this.showOnlySystem = false
-      }
-    },
     searchResults(newVal) {
       if (newVal) {
         this.$nextTick(() => {
@@ -163,286 +109,178 @@ export default {
 
 <style scoped>
 .requirement-table {
-  margin-top: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
 }
 
 .cfts-results, .req-results {
-  background: linear-gradient(145deg, #d0d0d0 0%, #c0c0c0 50%, #b0b0b0 100%);
-  border: 3px outset #c0c0c0;
-  padding: 24px;
-  margin: 16px;
-  font-family: 'JetBrains Mono', monospace;
-  box-shadow:
-    2px 2px 0px #000,
-    4px 4px 0px #808080;
-  position: relative;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 h2 {
-  color: #000000;
-  margin-bottom: 16px;
-  font-size: 20px;
-  font-family: 'Press Start 2P', monospace;
-  text-shadow: 1px 1px 0px #fff;
+  color: #1f2937;
+  padding: 20px 24px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
 }
 
 .result-summary {
   display: flex;
-  justify-content: space-between;
-  background: #c0c0c0;
-  padding: 16px;
-  border: 2px inset #c0c0c0;
-  margin-bottom: 12px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
-  box-shadow: inset 1px 1px 2px #000;
-}
-
-.filter-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #c0c0c0;
-  padding: 12px 16px;
-  border: 2px outset #c0c0c0;
-  margin-bottom: 16px;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.filter-checkboxes {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.filter-checkbox {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-  color: #000000;
-}
-
-.filter-checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin-right: 8px;
-  cursor: pointer;
-}
-
-.filter-checkbox span {
-  user-select: none;
-}
-
-.filter-info {
-  font-size: 13px;
-  color: #cc0000;
-  font-weight: bold;
+  gap: 24px;
+  padding: 16px 24px;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .summary-item {
   font-size: 14px;
-  font-family: 'JetBrains Mono', monospace;
+  color: #6b7280;
 }
 
 .summary-item strong {
-  color: #000000;
-  font-weight: bold;
+  color: #374151;
+  font-weight: 600;
+  margin-right: 8px;
 }
 
 .table-container {
   overflow-x: auto;
-  border: 2px inset #c0c0c0;
-  background: #ffffff;
 }
 
 .excel-table {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .excel-table th {
-  background: linear-gradient(145deg, #d0d0d0 0%, #c0c0c0 50%, #b0b0b0 100%);
-  color: #000000;
-  padding: 8px;
+  background: #f9fafb;
+  color: #374151;
+  padding: 12px 16px;
   text-align: left;
-  font-weight: bold;
-  border: 2px outset #c0c0c0;
-  font-size: 14px;
-  font-family: 'JetBrains Mono', monospace;
-  box-shadow: 1px 1px 0px #000;
-  text-shadow: 1px 1px 0px #fff;
-  position: relative;
+  font-weight: 600;
+  border-bottom: 2px solid #e5e7eb;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .excel-table td {
-  padding: 8px;
-  border: 1px solid #808080;
+  padding: 12px 16px;
+  border-bottom: 1px solid #e5e7eb;
   vertical-align: top;
-  background: linear-gradient(145deg, #ffffff 0%, #f8f8f8 100%);
-  font-family: 'JetBrains Mono', monospace;
-  transition: all 0.3s ease;
-  position: relative;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.excel-table tbody tr {
+  transition: background-color 0.15s ease;
 }
 
 .excel-table tbody tr:hover {
-  background: #000080; /* Classic navy blue - 1995 retro */
-  color: #ffffff;
+  background: #f3f4f6;
 }
 
-.excel-table tbody tr:hover td {
-  background: transparent;
-  color: #ffffff !important;
+.sr24-description,
+.sr26-description {
+  min-width: 250px;
+  max-width: 400px;
+  word-wrap: break-word;
 }
 
-.excel-table tbody tr:hover .polarian-link {
-  color: #ffffff !important;
-}
-
-.excel-table tbody tr:hover .polarian-id {
-  color: #ffffff !important;
-}
-
-.even-row {
-  background: #c0c0c0 !important;
-}
-
-.even-row:hover {
-  background: #000080 !important; /* Same hover color for consistency */
-  color: #ffffff !important;
-}
-
-/* Column specific styling - 1995 Retro Colors */
-.row-number {
-  background: #c0c0c0;
-  text-align: center;
-  font-weight: bold;
-  color: #000000;
-  width: 50px;
-  border: 1px inset #c0c0c0;
-}
-
-.cfts-id {
-  font-weight: bold;
-  color: #800080; /* Classic purple */
-  min-width: 100px;
-  text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
-}
-
-.req-id {
-  font-weight: bold;
-  color: #008000; /* Classic green */
-  min-width: 90px;
-  text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
-}
-
-.polarian-id {
-  color: #0066cc; /* Brighter blue for better visibility */
+.source-id {
   min-width: 120px;
-  text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
-  font-weight: 600;
+  text-align: center;
+  color: #6b7280;
 }
 
-.polarian-link {
-  color: #0066ff; /* Brighter blue hyperlink */
+.source-link {
+  color: #3b82f6;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.source-link:hover {
+  color: #2563eb;
   text-decoration: underline;
-  font-weight: bold;
-  cursor: pointer;
-  transition: color 0.2s ease;
 }
 
-.polarian-link:hover {
-  color: #cc00cc; /* Brighter magenta on hover */
-  text-decoration: underline;
+.reqif-foreign-id {
+  font-weight: 500;
+  color: #059669;
+  min-width: 100px;
+  text-align: center;
 }
 
-
-.scope {
+.melco-id {
   min-width: 150px;
-  max-width: 200px;
-  word-wrap: break-word;
+  text-align: center;
 }
 
-.scope-sw {
-  font-weight: bold;
-  color: #cc0000; /* Strong red text */
-  text-shadow: 1px 1px 0px rgba(255,255,255,0.5);
+.melco-link {
+  color: #7c3aed;
+  text-decoration: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
 }
 
-.scope-empty {
-  color: #808080;
-  font-style: italic;
-}
-
-.test-case {
-  min-width: 200px;
-  max-width: 300px;
-  word-wrap: break-word;
+.melco-link:hover {
+  color: #6d28d9;
+  background: #ede9fe;
+  text-decoration: none;
 }
 
 .no-results {
   text-align: center;
-  color: #000000;
+  color: #6b7280;
   font-size: 14px;
-  margin-top: 32px;
-  padding: 24px;
-  background: #c0c0c0;
-  border: 3px inset #c0c0c0;
-  font-family: 'JetBrains Mono', monospace;
-  box-shadow: inset 1px 1px 2px #000;
+  padding: 48px 24px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Simple highlight for target row in Req.ID search - 1995 style */
 .target-row {
-  background: #ffff00 !important; /* Bright yellow highlight */
-  border-left: 4px solid #ff0000; /* Red border */
+  background: #fef3c7 !important;
+  border-left: 3px solid #f59e0b;
 }
 
 .target-row td {
-  background: transparent !important;
-  font-weight: bold;
-  color: #000000 !important;
+  font-weight: 500;
 }
 
-/* Target indicator triangle */
-.target-indicator {
-  color: #ff0000; /* Red indicator */
-  font-size: 14px;
-  margin-right: 6px;
-  font-weight: bold;
-  display: inline-block;
-  animation: pulse-indicator 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse-indicator {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.1);
-  }
-}
-
-/* Responsive design */
 @media (max-width: 768px) {
+  .requirement-table {
+    padding: 16px;
+  }
+
   .result-summary {
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
   }
-  
+
   .excel-table {
     font-size: 12px;
   }
-  
+
   .excel-table th,
   .excel-table td {
-    padding: 8px 4px;
+    padding: 10px 12px;
   }
 }
 </style>

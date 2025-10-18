@@ -6,6 +6,7 @@ from datetime import datetime
 
 class CFTSRequirement(BaseModel):
     cfts_id: str
+    cfts_name: Optional[str] = None
     req_id: str
     polarian_id: Optional[str] = None
     polarian_url: Optional[str] = None
