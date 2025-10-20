@@ -55,7 +55,7 @@ export default {
       if (this.cftsIds.length > 0) return // Already loaded
 
       try {
-        const response = await axios.get('http://localhost:8001/cfts/autocomplete/cfts-ids')
+        const response = await axios.get('/api/cfts/autocomplete/cfts-ids')
         this.cftsIds = response.data
       } catch (error) {
         console.error('Failed to load CFTS IDs:', error)

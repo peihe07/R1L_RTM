@@ -45,10 +45,10 @@ export default {
       this.searchType = type
       try {
         if (type === 'cfts') {
-          const response = await fetch(`http://localhost:8001/cfts/search?cfts_id=${query}`)
+          const response = await fetch(`/api/cfts/search?cfts_id=${query}`)
           this.searchResults = await response.json()
         } else if (type === 'req') {
-          const response = await fetch(`http://localhost:8001/req/search?req_id=${query}`)
+          const response = await fetch(`/api/req/search?req_id=${query}`)
           this.searchResults = await response.json()
         }
       } catch (error) {

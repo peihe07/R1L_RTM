@@ -121,7 +121,7 @@ export default {
       this.error = null
 
       try {
-        const response = await fetch(`http://localhost:8001/sys2/requirement/${this.melcoId}`)
+        const response = await fetch(`/api/sys2/requirement/${this.melcoId}`)
         if (response.status === 404) {
           // No SYS.2 data found, but this is not an error
           this.requirements = []
@@ -140,7 +140,7 @@ export default {
     },
     async fetchTestCases() {
       try {
-        const response = await fetch(`http://localhost:8001/testcases/by-feature-id/${this.melcoId}`)
+        const response = await fetch(`/api/testcases/by-feature-id/${this.melcoId}`)
         if (!response.ok) {
           console.warn('No test cases found for this Melco ID')
           this.testcases = []

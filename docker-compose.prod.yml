@@ -22,40 +22,32 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: r1l_rtm_backend
     environment:
       # 內部用 db:5432 連線
       DATABASE_URL: postgresql://postgres:postgres@db:5432/requirement_db
-      # CORS：允許的來源
-      CORS_ORIGINS: http://localhost,http://127.0.0.1,http://172.30.227.55
+      # CORS：允許的來源（允許內網訪問）
+      CORS_ORIGINS: "*"
     depends_on:
       db:
         condition: service_healthy
     volumes:
-      - ./backend:/app
       - ./data:/data
     networks:
       - rtm_network
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     restart: unless-stopped
 
-  # Frontend (Vue.js)
+  # Frontend (Vue.js) - Production build with Nginx
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     container_name: r1l_rtm_frontend
     depends_on:
       - backend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
     networks:
       - rtm_network
-    environment:
-      - CHOKIDAR_USEPOLLING=true
-    command: npm run dev
     restart: unless-stopped
 
   # Reverse Proxy（唯一對外公開 80）
@@ -68,7 +60,7 @@ services:
     volumes:
       - ./reverse-proxy/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
-      - "80:80"
+      - "5566:80"
     networks:
       - rtm_network
     restart: unless-stopped
