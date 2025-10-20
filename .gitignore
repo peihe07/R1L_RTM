@@ -81,3 +81,15 @@ import_report_*.json
 # Build outputs
 dist/
 build/
+
+# Docker volumes and data
+postgres_data/
+data/
+
+# Monitoring logs
+monitor.log
+
+# Temporary files
+*.tmp
+*.bak
+*.swp

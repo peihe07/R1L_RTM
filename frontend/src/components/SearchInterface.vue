@@ -1,6 +1,6 @@
 <template>
   <div class="search-container">
-    <h1>Requirements and Test Case Management</h1>
+    <h1>R1L Requirements and Test Case</h1>
 
 
     <div class="search-section">
@@ -23,7 +23,7 @@
       </div>
 
       <div class="search-group">
-        <label for="req-search">Req.ID 搜尋:</label>
+        <label for="req-search">ReqID.ForeignID 搜尋:</label>
         <div class="input-group">
           <input
             id="req-search"
