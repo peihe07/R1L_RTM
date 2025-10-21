@@ -22,7 +22,7 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile.prod
+      dockerfile: ../docker/backend/Dockerfile.prod
     container_name: r1l_rtm_backend
     environment:
       # 內部用 db:5432 連線
@@ -42,7 +42,7 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.prod
+      dockerfile: ../docker/frontend/Dockerfile.prod
     container_name: r1l_rtm_frontend
     depends_on:
       - backend
