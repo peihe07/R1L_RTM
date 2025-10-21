@@ -87,14 +87,16 @@ export default {
   },
   methods: {
     viewMelcoDetail(melcoId) {
-      this.$emit('view-melco-detail', melcoId.trim())
+      // Clean the Melco ID before emitting (already cleaned by splitMelcoIds, but ensure it's clean)
+      const cleanedId = melcoId.trim().replace(/^#+|#+$/g, '')
+      this.$emit('view-melco-detail', cleanedId)
     },
     splitMelcoIds(melcoIdString) {
-      // Split by newline or comma, and filter out empty strings
+      // Split by newline or comma, clean # symbols, and filter out empty strings
       if (!melcoIdString) return []
       return melcoIdString
         .split(/[\n,]+/)
-        .map(id => id.trim())
+        .map(id => id.trim().replace(/^#+|#+$/g, ''))  // Remove leading/trailing # symbols
         .filter(id => id.length > 0)
     },
     highlightDifferences(sr26Text, sr24Text) {
