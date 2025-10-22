@@ -32,13 +32,26 @@ def db_requirement_to_pydantic(db_req) -> CFTSRequirement:
 @router.get("/search", response_model=CFTSSearchResult)
 async def search_cfts(cfts_id: str = Query(..., description="CFTS ID to search (supports partial matching, e.g., 'CFTS016')"), db: Session = Depends(get_db)):
     """Search requirements by CFTS ID (supports partial matching)."""
+    import logging
+    logger = logging.getLogger(__name__)
+
     db_requirements = get_cfts_requirements_by_cfts_id(db, cfts_id)
-    
+
     if not db_requirements:
         raise HTTPException(status_code=404, detail="CFTS not found")
-    
+
+    # DEBUG: Log first requirement
+    if db_requirements:
+        first_db = db_requirements[0]
+        logger.info(f"DB req_id={first_db.req_id}, melco_id=\"{first_db.melco_id}\", created_at={first_db.created_at}")
+
     requirements = [db_requirement_to_pydantic(req) for req in db_requirements]
-    
+
+    # DEBUG: Log converted requirement
+    if requirements:
+        first_pyd = requirements[0]
+        logger.info(f"Pydantic req_id={first_pyd.req_id}, melco_id=\"{first_pyd.melco_id}\", created_at={first_pyd.created_at}")
+
     return CFTSSearchResult(
         cfts_id=cfts_id,
         requirements=requirements,
