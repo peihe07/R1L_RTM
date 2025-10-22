@@ -40,7 +40,8 @@ class CFTSImporter:
         excel_files = []
         for ext in ['.xlsx', '.xls']:
             for file in self.excel_folder.iterdir():
-                if file.name.startswith('CFTS') and file.name.endswith(ext):
+                # Support both formats: CFTS* and SYS1_CFTS*
+                if (file.name.startswith('CFTS') or file.name.startswith('SYS1_CFTS')) and file.name.endswith(ext):
                     excel_files.append(file)
         return sorted(excel_files)
 
@@ -48,15 +49,18 @@ class CFTSImporter:
         """
         Extract CFTS number and name from filename.
 
-        Example: CFTS016_Anti-Theft.xlsx -> (CFTS016, Anti-Theft)
+        Example:
+            CFTS016_Anti-Theft.xlsx -> (CFTS016, Anti-Theft)
+            SYS1_CFTS016_Anti-Theft_SR26.xlsx -> (CFTS016, Anti-Theft)
         """
         # Extract CFTS number
         cfts_match = re.search(r'CFTS\d+', filename)
         cfts_id = cfts_match.group(0) if cfts_match else ''
 
-        # Extract CFTS name (between CFTS number and .xlsx)
+        # Extract CFTS name (between CFTS number and _SR26 or .xlsx)
         # Handle both underscore and space
-        name_match = re.search(r'CFTS\d+[_\s](.+?)\.(xlsx|xls)', filename)
+        # Pattern matches: CFTS\d+[_\s]description[_\s](SR\d+)?.xlsx
+        name_match = re.search(r'CFTS\d+[_\s](.+?)(?:_SR\d+)?\.(xlsx|xls)', filename)
         cfts_name = name_match.group(1).strip() if name_match else ''
 
         return cfts_id, cfts_name
